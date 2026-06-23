@@ -5,13 +5,13 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
   </head>
   <body>
-    <h2>QR 出席管理</h2>
+    <h2>QR 出席管理ver1.0</h2>
 
     <div id="reader" style="width: 300px;"></div>
     <p id="result"></p>
 
     <script>
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbzr2CDtnZ88q3f88et1B4031KmTXJKY7OwlY8p5T4N73-oOyLbNOyVTVrQTikBLm1mB/exec"; // ← ここに /exec を貼る
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbzWFyp116k75tWiy9qpj29cqBZlVh0xTaSm8jqfMkz75kL3lqcmeeEt5FiVB8RgVvyWbA/exec"; // ← ここに /exec を貼る
 
       function onScanSuccess(decodedText) {
         document.getElementById("result").innerText = "読み取り: " + decodedText;
