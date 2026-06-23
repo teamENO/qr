@@ -1,17 +1,32 @@
 <!DOCTYPE html>
 <html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+  </head>
   <body>
-    <h2>Camera Test (GitHub)</h2>
-    <video id="video" width="300" autoplay></video>
+    <h2>QR 出席管理</h2>
+
+    <div id="reader" style="width: 300px;"></div>
+    <p id="result"></p>
 
     <script>
-      navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-          document.getElementById("video").srcObject = stream;
-        })
-        .catch(err => {
-          document.body.innerHTML += "<p style='color:red'>カメラが起動できません: " + err + "</p>";
+      function onScanSuccess(decodedText) {
+        document.getElementById("result").innerText = "読み取り: " + decodedText;
+
+        // GAS API に送信
+        fetch("https://script.google.com/macros/s/AKfycbzr2CDtnZ88q3f88et1B4031KmTXJKY7OwlY8p5T4N73-oOyLbNOyVTVrQTikBLm1mB/exec", {
+          method: "POST",
+          body: JSON.stringify({ qr: decodedText })
         });
+      }
+
+      const html5QrCode = new Html5Qrcode("reader");
+      html5QrCode.start(
+        { facingMode: "environment" }, // スマホは背面カメラ
+        { fps: 10, qrbox: 250 },
+        onScanSuccess
+      );
     </script>
   </body>
 </html>
