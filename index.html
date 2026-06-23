@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Camera Test (GitHub)</h2>
+    <video id="video" width="300" autoplay></video>
+
+    <script>
+      navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+          document.getElementById("video").srcObject = stream;
+        })
+        .catch(err => {
+          document.body.innerHTML += "<p style='color:red'>カメラが起動できません: " + err + "</p>";
+        });
+    </script>
+  </body>
+</html>
