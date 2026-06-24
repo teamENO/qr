@@ -5,17 +5,37 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
   </head>
   <body>
-    <h2>QR 出席管理ver1.1</h2>
+    <h2>QR 出席管理</h2>
 
     <div id="reader" style="width: 300px;"></div>
     <p id="result"></p>
 
     <script>
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbzWFyp116k75tWiy9qpj29cqBZlVh0xTaSm8jqfMkz75kL3lqcmeeEt5FiVB8RgVvyWbA/exec"; // ← ここに /exec を貼る
+      const GAS_URL = "YOUR_GAS_URL_HERE"; // ← /exec を貼る
+
+      let lastScanned = "";       // 前回読み取ったQR
+      let lastTime = 0;           // 読み取った時間
+      const blockMs = 3000;       // 3秒以内は同じQRを無視
 
       function onScanSuccess(decodedText) {
-        document.getElementById("result").innerText = "読み取り: " + decodedText;
+        const now = Date.now();
 
+        // 二重読み取り防止（同じQRを短時間で読んだら無視）
+        if (decodedText === lastScanned && now - lastTime < blockMs) {
+          document.getElementById("result").innerText =
+            "同じQRを連続で読み取りました（無視）";
+          return;
+        }
+
+        // 記録更新
+        lastScanned = decodedText;
+        lastTime = now;
+
+        // 表示
+        document.getElementById("result").innerText =
+          "読み取り: " + decodedText;
+
+        // GAS に送信
         fetch(GAS_URL, {
           method: "POST",
           body: JSON.stringify({ qr: decodedText })
