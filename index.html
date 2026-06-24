@@ -8,8 +8,8 @@
       body {
         margin: 0;
         padding: 0;
-        background: #111;
-        color: #fff;
+        background: #0d1117;
+        color: #e6edf3;
         font-family: "Segoe UI", sans-serif;
         display: flex;
         flex-direction: column;
@@ -18,74 +18,112 @@
       }
 
       h2 {
-        margin-top: 20px;
-        font-size: 24px;
+        margin-top: 25px;
+        font-size: 26px;
         font-weight: 600;
+        letter-spacing: 1px;
       }
 
       .card {
-        background: #1c1c1c;
-        padding: 20px;
+        background: #161b22;
+        padding: 22px;
         margin-top: 20px;
-        border-radius: 12px;
-        width: 90%;
-        max-width: 360px;
-        box-shadow: 0 0 20px rgba(0,0,0,0.4);
+        border-radius: 14px;
+        width: 92%;
+        max-width: 380px;
+        box-shadow: 0 0 25px rgba(0,0,0,0.45);
+        border: 1px solid #30363d;
       }
 
       #reader {
         width: 100%;
-        border-radius: 10px;
+        border-radius: 12px;
         overflow: hidden;
+        border: 1px solid #30363d;
       }
 
       #result {
-        margin-top: 15px;
+        margin-top: 18px;
         font-size: 18px;
         font-weight: 500;
-        color: #4ade80; /* 緑 */
+        color: #3fb950;
       }
 
       .warning {
-        color: #f87171; /* 赤 */
+        color: #f85149;
+      }
+
+      #history-box {
+        margin-top: 25px;
+        width: 92%;
+        max-width: 380px;
+        background: #161b22;
+        padding: 15px;
+        border-radius: 12px;
+        border: 1px solid #30363d;
+        box-shadow: 0 0 20px rgba(0,0,0,0.3);
+      }
+
+      #history {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        text-align: left;
+        font-size: 14px;
+      }
+
+      #history li {
+        padding: 6px 0;
+        border-bottom: 1px solid #30363d;
       }
     </style>
   </head>
 
   <body>
-    <h2>QR 出席管理ver1.4</h2>
+    <h2>QR 出席管理ver1.6</h2>
 
     <div class="card">
       <div id="reader"></div>
       <p id="result">QR を読み取ってください</p>
     </div>
 
-    <script>
-      const GAS_URL = "https://script.google.com/macros/s/AKfycbzWFyp116k75tWiy9qpj29cqBZlVh0xTaSm8jqfMkz75kL3lqcmeeEt5FiVB8RgVvyWbA/exec";
+    <div id="history-box">
+      <h3>読み取り履歴</h3>
+      <ul id="history"></ul>
+    </div>
 
-      let lastScanned = "";
-      let lastTime = 0;
-      const blockMs = 3000;
+    <script>
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbza-eF21VywbUOADGpxYRWTXpoVzYw-Z3-U1R1nnaVsHW98u7Pjjb9Ma9s_s-ZK7qNXMw/exec";
+
+      let isLocked = false;
+      const lockTime = 2000;
+
+      async function loadHistory() {
+        const res = await fetch(GAS_URL);
+        const data = await res.json();
+
+        document.getElementById("history").innerHTML =
+          data.map(x => `<li>${x}</li>`).join("");
+      }
 
       function onScanSuccess(decodedText) {
-        const now = Date.now();
+        if (isLocked) return;
 
-        // 二重読み取り防止
-        if (decodedText === lastScanned && now - lastTime < blockMs) {
-          document.getElementById("result").innerHTML =
-            `<span class="warning">同じQRを連続で読み取りました（無視）</span>`;
-          return;
-        }
+        isLocked = true;
 
-        lastScanned = decodedText;
-        lastTime = now;
-
-        document.getElementById("result").innerText = "読み取り: " + decodedText;
+        document.getElementById("result").innerText =
+          "読み取り: " + decodedText;
 
         fetch(GAS_URL, {
           method: "POST",
           body: JSON.stringify({ qr: decodedText })
-        });
+        }).then(() => loadHistory());
+
+        setTimeout(() => {
+          isLocked = false;
+          document.getElementById("result").innerText =
+            "QR を読み取ってください";
+        }, lockTime);
       }
 
       const html5QrCode = new Html5Qrcode("reader");
@@ -94,6 +132,8 @@
         { fps: 10, qrbox: 250 },
         onScanSuccess
       );
+
+      loadHistory();
     </script>
   </body>
 </html>
