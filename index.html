@@ -3,39 +3,85 @@
   <head>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <script src="https://unpkg.com/html5-qrcode"></script>
-  </head>
-  <body>
-    <h2>QR 出席管理ver1.3</h2>
 
-    <div id="reader" style="width: 300px;"></div>
-    <p id="result"></p>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+        background: #111;
+        color: #fff;
+        font-family: "Segoe UI", sans-serif;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      h2 {
+        margin-top: 20px;
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .card {
+        background: #1c1c1c;
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 12px;
+        width: 90%;
+        max-width: 360px;
+        box-shadow: 0 0 20px rgba(0,0,0,0.4);
+      }
+
+      #reader {
+        width: 100%;
+        border-radius: 10px;
+        overflow: hidden;
+      }
+
+      #result {
+        margin-top: 15px;
+        font-size: 18px;
+        font-weight: 500;
+        color: #4ade80; /* 緑 */
+      }
+
+      .warning {
+        color: #f87171; /* 赤 */
+      }
+    </style>
+  </head>
+
+  <body>
+    <h2>QR 出席管理ver1.4</h2>
+
+    <div class="card">
+      <div id="reader"></div>
+      <p id="result">QR を読み取ってください</p>
+    </div>
 
     <script>
-      const GAS_URL = "YOUR_GAS_URL_HERE"; // ← /exec を貼る
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbzWFyp116k75tWiy9qpj29cqBZlVh0xTaSm8jqfMkz75kL3lqcmeeEt5FiVB8RgVvyWbA/exec";
 
-      let lastScanned = "";       // 前回読み取ったQR
-      let lastTime = 0;           // 読み取った時間
-      const blockMs = 3000;       // 3秒以内は同じQRを無視
+      let lastScanned = "";
+      let lastTime = 0;
+      const blockMs = 3000;
 
       function onScanSuccess(decodedText) {
         const now = Date.now();
 
-        // 二重読み取り防止（同じQRを短時間で読んだら無視）
+        // 二重読み取り防止
         if (decodedText === lastScanned && now - lastTime < blockMs) {
-          document.getElementById("result").innerText =
-            "同じQRを連続で読み取りました（無視）";
+          document.getElementById("result").innerHTML =
+            `<span class="warning">同じQRを連続で読み取りました（無視）</span>`;
           return;
         }
 
-        // 記録更新
         lastScanned = decodedText;
         lastTime = now;
 
-        // 表示
-        document.getElementById("result").innerText =
-          "読み取り: " + decodedText;
+        document.getElementById("result").innerText = "読み取り: " + decodedText;
 
-        // GAS に送信
         fetch(GAS_URL, {
           method: "POST",
           body: JSON.stringify({ qr: decodedText })
