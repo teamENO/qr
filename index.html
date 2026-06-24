@@ -5,7 +5,7 @@
     <script src="https://unpkg.com/html5-qrcode"></script>
   </head>
   <body>
-    <h2>QR 出席管理ver1.0</h2>
+    <h2>QR 出席管理ver1.1</h2>
 
     <div id="reader" style="width: 300px;"></div>
     <p id="result"></p>
@@ -16,7 +16,6 @@
       function onScanSuccess(decodedText) {
         document.getElementById("result").innerText = "読み取り: " + decodedText;
 
-        // GAS に送信
         fetch(GAS_URL, {
           method: "POST",
           body: JSON.stringify({ qr: decodedText })
